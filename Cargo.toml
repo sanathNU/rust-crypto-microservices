@@ -1,0 +1,2 @@
+[workspace]
+members = ["common", "lattice_service", "zk_service", "bench_client"]
