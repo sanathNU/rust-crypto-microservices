@@ -73,11 +73,42 @@ impl<F: PrimeField> ConstraintSynthesizer<F> for MultiplyCircuit<F> {
     }
 }
 
+/// Circuit 2: Prove knowledge of x such that x^3 = y (public)
+#[derive(Clone)]
+struct CubeRootCircuit<F: PrimeField> {
+    x: Option<F>,    // private: the cube root
+    y: Option<F>,    // public: the cube
+}
+
+impl<F: PrimeField> ConstraintSynthesizer<F> for CubeRootCircuit<F> {
+    fn generate_constraints(self, cs: ConstraintSystemRef<F>) -> Result<(), SynthesisError> {
+        let x_var = FpVar::new_witness(cs.clone(), || {
+            self.x.ok_or(SynthesisError::AssignmentMissing)
+        })?;
+        let y_var = FpVar::new_input(cs.clone(), || {
+            self.y.ok_or(SynthesisError::AssignmentMissing)
+        })?;
+
+        // x^2
+        let x_squared = &x_var * &x_var;
+        // x^3
+        let x_cubed = &x_squared * &x_var;
+
+        // Constraint: x^3 = y
+        x_cubed.enforce_equal(&y_var)?;
+
+        Ok(())
+    }
+}
+
+
 // ============ Proving Key Cache ============
 
 struct CircuitKeys {
     multiply_pk: ProvingKey<Bn254>,
     multiply_vk: VerifyingKey<Bn254>,
+    cube_root_pk: ProvingKey<Bn254>,
+    cube_root_vk: VerifyingKey<Bn254>,
 }
 
 fn setup_circuits() -> CircuitKeys {
@@ -88,9 +119,15 @@ fn setup_circuits() -> CircuitKeys {
         dummy_multiply, &mut OsRng
     ).expect("Setup failed for multiply circuit");
 
+    // Setup for CubeRootCircuit
+    let dummy_cube = CubeRootCircuit::<Fr> { x: None, y: None };
+    let (cube_root_pk, cube_root_vk) = Groth16::<Bn254>::circuit_specific_setup(
+        dummy_cube, &mut OsRng
+    ).expect("Setup failed for cube_root circuit");
+
     println!("Trusted setup complete.");
 
-    CircuitKeys { multiply_pk, multiply_vk }
+    CircuitKeys { multiply_pk, multiply_vk, cube_root_pk, cube_root_vk }
 }
 
 // ============ Error Types ============
@@ -234,6 +271,50 @@ fn bench_verify_multiply(pk: &ProvingKey<Bn254>, vk: &VerifyingKey<Bn254>, itera
         .collect()
 }
 
+fn bench_prove_cube_root(pk: &ProvingKey<Bn254>, iterations: u32) -> (Vec<u128>, usize) {
+    let mut timings = Vec::with_capacity(iterations as usize);
+    let mut proof_size = 0;
+
+    for i in 0..iterations {
+        let x = Fr::from((i + 5) as u64);
+        let y = x * x * x; // x^3
+
+        let circuit = CubeRootCircuit { x: Some(x), y: Some(y) };
+
+        let start = Instant::now();
+        let proof = Groth16::<Bn254>::prove(pk, circuit, &mut OsRng)
+            .expect("Proving failed");
+        timings.push(start.elapsed().as_micros());
+
+        if proof_size == 0 {
+            proof_size = proof.serialized_size(ark_serialize::Compress::Yes);
+        }
+    }
+
+    (timings, proof_size)
+}
+
+fn bench_verify_cube_root(pk: &ProvingKey<Bn254>, vk: &VerifyingKey<Bn254>, iterations: u32) -> Vec<u128> {
+    let x = Fr::from(5u64);
+    let y = x * x * x;
+
+    let circuit = CubeRootCircuit { x: Some(x), y: Some(y) };
+    let proof = Groth16::<Bn254>::prove(pk, circuit, &mut OsRng).expect("Proving failed");
+    let pvk = prepare_verifying_key(vk);
+
+    let public_inputs = vec![y];
+
+    (0..iterations)
+        .map(|_| {
+            let start = Instant::now();
+            let valid = Groth16::<Bn254>::verify_with_processed_vk(&pvk, &public_inputs, &proof)
+                .expect("Verification failed");
+            assert!(valid);
+            start.elapsed().as_micros()
+        })
+        .collect()
+}
+
 async fn zk_prove_bench(
     axum::extract::State(keys): axum::extract::State<std::sync::Arc<CircuitKeys>>,
     Json(req): Json<ZkBenchRequest>,
@@ -242,6 +323,7 @@ async fn zk_prove_bench(
 
     let (timings, proof_size) = match req.circuit_id.as_str() {
         "multiply" => bench_prove_multiply(&keys.multiply_pk, iterations),
+        "cube_root" => bench_prove_cube_root(&keys.cube_root_pk, iterations),
         _ => return Err(AppError::InvalidCircuit(req.circuit_id)),
     };
 
@@ -268,6 +350,7 @@ async fn zk_verify_bench(
 
     let timings = match req.circuit_id.as_str() {
         "multiply" => bench_verify_multiply(&keys.multiply_pk, &keys.multiply_vk, iterations),
+        "cube_root" => bench_verify_cube_root(&keys.cube_root_pk, &keys.cube_root_vk, iterations),
         _ => return Err(AppError::InvalidCircuit(req.circuit_id)),
     };
 
