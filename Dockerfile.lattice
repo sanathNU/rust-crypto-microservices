@@ -1,0 +1,39 @@
+# Build stage
+FROM rust:1.83-bookworm AS builder
+
+WORKDIR /app
+
+# Copy workspace manifests and lockfile
+COPY Cargo.toml Cargo.lock ./
+COPY common/Cargo.toml ./common/
+COPY lattice_service/Cargo.toml ./lattice_service/
+COPY zk_service/Cargo.toml ./zk_service/
+COPY bench_client/Cargo.toml ./bench_client/
+
+# Create dummy sources to cache dependencies
+RUN mkdir -p common/src lattice_service/src zk_service/src bench_client/src \
+    && echo "pub fn dummy() {}" > common/src/lib.rs \
+    && echo "fn main() {}" > lattice_service/src/main.rs \
+    && echo "fn main() {}" > zk_service/src/main.rs \
+    && echo "fn main() {}" > bench_client/src/main.rs
+
+RUN cargo build --release --package lattice_service && rm -rf */src
+
+# Copy actual sources and rebuild
+COPY common/src ./common/src
+COPY lattice_service/src ./lattice_service/src
+RUN touch common/src/lib.rs lattice_service/src/main.rs \
+    && cargo build --release --package lattice_service
+
+# Runtime stage
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/target/release/lattice_service /usr/local/bin/
+
+EXPOSE 8000
+
+CMD ["lattice_service"]

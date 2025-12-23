@@ -500,7 +500,7 @@ async fn main() {
         Commands::Suite { lattice_url, zk_url, kem_iterations, zk_iterations } => {
             println!("Running full benchmark suite...\n");
             
-            for param_set in ["ml_kem_512", "ml_kem_767", "ml_kem_1024"] {
+            for param_set in ["ml_kem_512", "ml_kem_768", "ml_kem_1024"] {
                 for operation in ["keygen", "encaps", "decaps", "full_handshake"] {
                     println!(" KEM: {} {}", param_set, operation);
                     let result = run_kem_benchmark(
