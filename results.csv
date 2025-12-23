@@ -1,0 +1,17 @@
+timestamp,label,service,operation,param_set,iterations,requests,concurrency,avg_latency_ms,min_latency_ms,max_latency_ms,p95_latency_ms,throughput_ops_sec,client_total_time_ms,client_avg_request_ms,error_count
+2025-12-23T04:35:20.717721+00:00,experiment-1,lattice_service,keygen,ml_kem_512,100,1,1,0.03125,0.027,0.045,0.033,32000.0,5.0,5.0,0
+2025-12-23T04:35:20.720512+00:00,experiment-1,lattice_service,encaps,ml_kem_512,100,1,1,0.02444,0.024,0.029,0.025,40916.53027823241,2.0,2.0,0
+2025-12-23T04:35:20.723790+00:00,experiment-1,lattice_service,decaps,ml_kem_512,100,1,1,0.02932,0.027,0.034,0.031,34106.41200545702,3.0,3.0,0
+2025-12-23T04:35:20.731453+00:00,experiment-1,lattice_service,full_handshake,ml_kem_512,100,1,1,0.07431,0.068,0.084,0.078,13457.139012245996,7.0,7.0,0
+2025-12-23T04:35:20.731581+00:00,experiment-1,lattice_service,keygen,ml_kem_767,100,1,1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1
+2025-12-23T04:35:20.731753+00:00,experiment-1,lattice_service,encaps,ml_kem_767,100,1,1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1
+2025-12-23T04:35:20.731896+00:00,experiment-1,lattice_service,decaps,ml_kem_767,100,1,1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1
+2025-12-23T04:35:20.732009+00:00,experiment-1,lattice_service,full_handshake,ml_kem_767,100,1,1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1
+2025-12-23T04:35:20.737816+00:00,experiment-1,lattice_service,keygen,ml_kem_1024,100,1,1,0.05629,0.05,0.069,0.059,17765.144785930006,5.0,5.0,0
+2025-12-23T04:35:20.742629+00:00,experiment-1,lattice_service,encaps,ml_kem_1024,100,1,1,0.04536,0.044,0.056,0.049,22045.855379188713,4.0,4.0,0
+2025-12-23T04:35:20.747826+00:00,experiment-1,lattice_service,decaps,ml_kem_1024,100,1,1,0.04895,0.048,0.059,0.053,20429.009193054135,5.0,5.0,0
+2025-12-23T04:35:20.762220+00:00,experiment-1,lattice_service,full_handshake,ml_kem_1024,100,1,1,0.14159,0.129,0.236,0.152,7062.645667066883,14.0,14.0,0
+2025-12-23T04:35:20.775984+00:00,experiment-1,zk_service,prove,multiply,10,1,1,1.2923,1.138,1.749,1.749,773.814129846011,13.0,13.0,0
+2025-12-23T04:35:20.819229+00:00,experiment-1,zk_service,verify,multiply,100,1,1,0.41134,0.351,0.677,0.609,2431.07891282151,43.0,43.0,0
+2025-12-23T04:35:20.831917+00:00,experiment-1,zk_service,prove,cube_root,10,1,1,1.2452,1.109,1.428,1.428,803.0838419530999,12.0,12.0,0
+2025-12-23T04:35:20.872477+00:00,experiment-1,zk_service,verify,cube_root,100,1,1,0.38455,0.343,0.705,0.522,2600.442075152776,40.0,40.0,0
