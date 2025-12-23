@@ -253,7 +253,7 @@ async fn main() {
         .route("/health", get(health))
         .route("/kem_bench", post(kem_bench));
 
-    let addr = SocketAddr::from(([127,0,0,1], 8000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
     let tcp = TcpListener::bind(&addr).await.unwrap();
     
     println!("lattice_service listening on {}", addr);

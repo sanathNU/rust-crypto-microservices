@@ -17,11 +17,13 @@ RUN mkdir -p common/src lattice_service/src zk_service/src bench_client/src \
     && echo "fn main() {}" > zk_service/src/main.rs \
     && echo "fn main() {}" > bench_client/src/main.rs
 
-RUN cargo build --release --package bench_client && rm -rf */src
+RUN cargo build --release --package bench_client
 
-# Copy actual sources and rebuild
+# Copy actual sources for bench_client (and common if it depends on it)
 COPY common/src ./common/src
 COPY bench_client/src ./bench_client/src
+
+# Rebuild with real source
 RUN touch common/src/lib.rs bench_client/src/main.rs \
     && cargo build --release --package bench_client
 

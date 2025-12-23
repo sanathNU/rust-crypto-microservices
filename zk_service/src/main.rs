@@ -382,7 +382,7 @@ async fn main() {
 
     
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8001));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 8001));
     println!("zk_service listening on {}", addr);
 
     let tcp = TcpListener::bind(&addr).await.unwrap();
