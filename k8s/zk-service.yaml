@@ -1,54 +1,54 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: lattice-service
+  name: zk-service
   namespace: pq-zk-bench
   labels:
-    app: lattice-service
+    app: zk-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: lattice-service
+      app: zk-service
   template:
     metadata:
       labels:
-        app: lattice-service
+        app: zk-service
     spec:
       containers:
-      - name: lattice-service
-        image: us-central1-docker.pkg.dev/bold-oasis-474117-k8/pq-zk-bench/lattice-service:v1
+      - name: zk-service
+        image: us-central1-docker.pkg.dev/bold-oasis-474117-k8/pq-zk-bench/zk-service:v1
         ports:
-        - containerPort: 8000
+        - containerPort: 8001
         resources:
           requests:
-            cpu: "250m"
-            memory: "256Mi"
-          limits:
             cpu: "500m"
             memory: "512Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
         readinessProbe:
           httpGet:
             path: /health
-            port: 8000
-          initialDelaySeconds: 5
+            port: 8001
+          initialDelaySeconds: 30
           periodSeconds: 10
-        livenessProbe: 
+        livenessProbe:
           httpGet:
             path: /health
-            port: 8000
-          initialDelaySeconds: 10
+            port: 8001
+          initialDelaySeconds: 60
           periodSeconds: 30
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: lattice-service
+  name: zk-service
   namespace: pq-zk-bench
 spec:
   selector:
-    app: lattice-service
+    app: zk-service
   ports:
-  - port: 8000
-    targetPort: 8000
+  - port: 8001
+    targetPort: 8001
   type: ClusterIP
