@@ -17,16 +17,18 @@ spec:
     spec:
       containers:
       - name: zk-service
-        image: us-central1-docker.pkg.dev/bold-oasis-474117-k8/pq-zk-bench/zk-service:v1
+        # UPDATE THIS: Replace with your registry path
+        # Example: us-central1-docker.pkg.dev/YOUR_PROJECT/pq-zk-bench/zk-service:v1
+        image: REGISTRY/zk-service:v1
         ports:
         - containerPort: 8001
         resources:
           requests:
             cpu: "500m"
-            memory: "512Mi"
-          limits:
-            cpu: "1000m"
             memory: "1Gi"
+          limits:
+            cpu: "2000m"
+            memory: "2Gi"
         readinessProbe:
           httpGet:
             path: /health
